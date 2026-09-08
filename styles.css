@@ -214,7 +214,5 @@ footer{padding:16px 0 26px;text-align:center;color:#5f5f5b;font-size:11px;text-t
   border:1px solid #2f2f2f;background:#101010;border-radius:14px;color:#b8b8b2;
   font-size:12px;line-height:1.5;cursor:pointer
 }
-.marketing-optin input{
-  margin-top:3px;accent-color:var(--accent);width:16px;height:16px;flex:0 0 auto
-}
+.marketing-optin input{margin-top:3px;accent-color:var(--accent);width:16px;height:16px;flex:0 0 auto}
 .marketing-optin strong{color:var(--ink)}

@@ -67,7 +67,7 @@ function start() {
 function restart() {
   sessionStorage.removeItem("filrouge_answers");
   sessionStorage.removeItem("filrouge_lead");
-  state = { step: -1, lead: { prenom: "", email: "" }, answers: {}, result: null };
+  state = { step: -1, lead: { prenom: "", email: "", marketing_consent: false, lead_id: null }, answers: {}, result: null };
   renderHome();
 }
 
@@ -93,7 +93,11 @@ function renderLead() {
           <small id="emailHelp">Elle servira à t'envoyer ton diagnostic.</small>
         </label>
       </div>
-      <div class="lead-consent">En continuant, tu acceptes que ton prénom et ton e-mail soient utilisés pour générer et t'envoyer ce diagnostic. Ils ne sont pas ajoutés à une newsletter dans cette V1.</div>
+      <div class="lead-consent">En continuant, tu acceptes que ton prénom, ton e-mail et tes réponses soient enregistrés afin de générer et sauvegarder ton diagnostic.</div>
+      <label class="marketing-optin">
+        <input id="marketingConsent" type="checkbox" ${state.lead?.marketing_consent ? "checked" : ""}>
+        <span>Je souhaite aussi recevoir les conseils, contenus et actualités de <strong>Nico.just.Nico</strong> par e-mail.</span>
+      </label>
       <div class="actions">
         <button class="secondary" id="leadBack">← Retour</button>
         <button class="primary" id="leadNext" disabled>Commencer le diagnostic <span class="arrow">→</span></button>
@@ -109,10 +113,40 @@ function renderLead() {
   }
   firstName.addEventListener("input",validate); emailInput.addEventListener("input",validate); validate();
   document.querySelector("#leadBack").addEventListener("click",renderHome);
-  next.addEventListener("click",()=>{
-    state.lead={prenom:firstName.value.trim(),email:emailInput.value.trim().toLowerCase()};
-    sessionStorage.setItem("filrouge_lead",JSON.stringify(state.lead));
-    state.step=0; renderStep();
+  next.addEventListener("click",async()=>{
+    next.disabled=true;
+    const originalLabel=next.innerHTML;
+    next.innerHTML="Enregistrement…";
+    try{
+      const marketing=document.querySelector("#marketingConsent")?.checked || false;
+      const params=new URLSearchParams(window.location.search);
+      const payload={
+        prenom:firstName.value.trim(),
+        email:emailInput.value.trim().toLowerCase(),
+        marketing_consent:marketing,
+        referrer:document.referrer || "",
+        utm_source:params.get("utm_source") || "",
+        utm_medium:params.get("utm_medium") || "",
+        utm_campaign:params.get("utm_campaign") || ""
+      };
+
+      const res=await fetch("/api/save-lead",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify(payload)
+      });
+      const data=await res.json();
+      if(!res.ok) throw new Error(data.error || "Impossible d'enregistrer tes informations.");
+
+      state.lead={...payload,lead_id:data.id};
+      sessionStorage.setItem("filrouge_lead",JSON.stringify(state.lead));
+      state.step=0;
+      renderStep();
+    }catch(err){
+      alert(err.message);
+      next.disabled=false;
+      next.innerHTML=originalLabel;
+    }
   });
 }
 
@@ -291,6 +325,27 @@ async function analyze() {
     if (!res.ok) throw new Error(data.error || "Erreur inconnue");
 
     state.result = data;
+
+    if(state.lead?.lead_id){
+      try{
+        const saveRes=await fetch("/api/complete-lead",{
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({
+            lead_id:state.lead.lead_id,
+            answers:state.answers,
+            result:data
+          })
+        });
+        if(!saveRes.ok){
+          const saveData=await saveRes.json().catch(()=>({}));
+          console.warn("Sauvegarde Supabase finale :", saveData.error || saveRes.status);
+        }
+      }catch(saveErr){
+        console.warn("Sauvegarde Supabase finale non bloquante :", saveErr);
+      }
+    }
+
     renderResult();
   } catch (err) {
     app.innerHTML = `
