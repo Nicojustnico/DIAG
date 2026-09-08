@@ -163,7 +163,13 @@ function renderStep() {
 
       <div class="question">${esc(s.question)}</div>
       <textarea id="answer" maxlength="1800" placeholder="${esc(s.placeholder)}">${esc(current)}</textarea>
-      <div class="hint">Écris comme tu parlerais. Pas besoin de faire “pro”.</div>
+      <div class="hint">Écris comme tu parlerais. Même une réponse floue suffit pour commencer.</div>
+
+      <div class="coach-actions">
+        <button class="coach-btn" id="stuckBtn"><span>?</span> Je ne sais pas quoi répondre</button>
+        <button class="coach-btn" id="deepenBtn"><span>✦</span> Aide-moi à creuser</button>
+      </div>
+      <div id="coachZone"></div>
 
       <div class="actions">
         <button class="secondary" id="backBtn">${state.step === 0 ? "Accueil" : "← Retour"}</button>
@@ -191,6 +197,9 @@ function renderStep() {
     }
   });
 
+  document.querySelector("#stuckBtn").addEventListener("click", () => runCoach("stuck"));
+  document.querySelector("#deepenBtn").addEventListener("click", () => runCoach("deepen"));
+
   nextBtn.addEventListener("click", async () => {
     state.answers[s.key] = textarea.value.trim();
     sessionStorage.setItem("filrouge_answers", JSON.stringify(state.answers));
@@ -202,6 +211,65 @@ function renderStep() {
       await analyze();
     }
   });
+}
+
+
+async function runCoach(mode, followupAnswer = "") {
+  const s = steps[state.step];
+  const zone = document.querySelector("#coachZone");
+  const textarea = document.querySelector("#answer");
+  zone.innerHTML = `<div class="coach-box coach-loading"><div class="mini-loader"></div><div>${mode === "stuck" ? "On va prendre la question autrement…" : "Je regarde ce qu'on peut creuser…"}</div></div>`;
+  try {
+    const res = await fetch("/api/coach", {
+      method: "POST", headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({
+        lead: state.lead, step: {index:state.step,key:s.key,title:s.title,question:s.question},
+        mode, currentAnswer: textarea.value.trim(), followupAnswer, previousAnswers: state.answers
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Erreur");
+    renderCoach(data);
+  } catch (err) {
+    zone.innerHTML = `<div class="coach-box">Je n'arrive pas à t'aider pour le moment. ${esc(err.message)}</div>`;
+  }
+}
+
+function renderCoach(data) {
+  const zone = document.querySelector("#coachZone");
+  const options = (data.options || []).map((o,i) =>
+    `<button class="choice" data-value="${esc(o)}"><span>${String.fromCharCode(65+i)}</span>${esc(o)}</button>`).join("");
+  zone.innerHTML = `<div class="coach-box">
+    <div class="coach-kicker">✦ Coup de pouce</div>
+    <div class="coach-message">${esc(data.message || "")}</div>
+    ${data.question ? `<div class="coach-question">${esc(data.question)}</div>` : ""}
+    ${options ? `<div class="choices">${options}</div>` : ""}
+    <div class="coach-follow"><input id="followText" placeholder="Ou réponds avec tes propres mots…"><button class="mini-primary" id="followSend">Envoyer →</button></div>
+  </div>`;
+  const send = value => { if (value.trim()) synthesize(value); };
+  zone.querySelectorAll(".choice").forEach(b => b.addEventListener("click", () => send(b.dataset.value)));
+  document.querySelector("#followSend").addEventListener("click", () => send(document.querySelector("#followText").value));
+}
+
+async function synthesize(value) {
+  const s=steps[state.step], zone=document.querySelector("#coachZone"), textarea=document.querySelector("#answer");
+  zone.innerHTML=`<div class="coach-box coach-loading"><div class="mini-loader"></div><div>Je reformule ce que ça dit de toi…</div></div>`;
+  try {
+    const res=await fetch("/api/coach",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+      lead:state.lead,step:{index:state.step,key:s.key,title:s.title,question:s.question},mode:"synthesize",
+      currentAnswer:textarea.value.trim(),followupAnswer:value,previousAnswers:state.answers
+    })});
+    const data=await res.json(); if(!res.ok)throw new Error(data.error||"Erreur");
+    zone.innerHTML=`<div class="coach-box synthesis"><div class="coach-kicker">Voilà ce que je retiens</div>
+      <blockquote>${esc(data.suggestedAnswer)}</blockquote>
+      <div class="synth-actions"><button class="mini-primary" id="useAnswer">✓ C'est ça</button><button class="coach-btn" id="editAnswer">Modifier moi-même</button></div></div>`;
+    document.querySelector("#useAnswer").onclick=()=>{
+      textarea.value=data.suggestedAnswer;state.answers[s.key]=textarea.value;
+      sessionStorage.setItem("filrouge_answers",JSON.stringify(state.answers));
+      document.querySelector("#nextBtn").disabled=textarea.value.trim().length<8;zone.innerHTML="";textarea.focus();
+    };
+    document.querySelector("#editAnswer").onclick=()=>{zone.innerHTML="";textarea.focus()};
+  } catch(err){zone.innerHTML=`<div class="coach-box">${esc(err.message)}</div>`}
 }
 
 async function analyze() {
