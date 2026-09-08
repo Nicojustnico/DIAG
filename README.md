@@ -52,3 +52,14 @@ Aucune base de données n'est incluse.
 ## V3 — Capture avant diagnostic
 Prénom + e-mail obligatoires, avec validation front et serveur. Le prénom personnalise le parcours.
 Cette V3 prépare l'adresse pour l'envoi, mais un fournisseur transactionnel (Resend/Brevo/Postmark) doit encore être branché pour expédier réellement l'e-mail.
+
+
+## V5 — Supabase / collecte de données
+Cette version enregistre prénom, e-mail, consentement Nico.just.Nico, réponses, profil final, indice de clarté, forces, pistes, recommandation, plan 7 jours et provenance UTM.
+
+Variables Netlify à ajouter :
+- SUPABASE_URL
+- SUPABASE_SECRET_KEY
+
+Exécuter `supabase-schema.sql` dans le SQL Editor Supabase avant le premier test.
+Ne jamais exposer `SUPABASE_SECRET_KEY` côté navigateur ou dans GitHub.

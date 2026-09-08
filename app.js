@@ -46,7 +46,7 @@ const steps = [
 
 let state = {
   step: -1,
-  lead: JSON.parse(sessionStorage.getItem("filrouge_lead") || '{"prenom":"","email":""}'),
+  lead: JSON.parse(sessionStorage.getItem("filrouge_lead") || '{"prenom":"","email":"","marketing_consent":false,"lead_id":null}'),
   answers: JSON.parse(sessionStorage.getItem("filrouge_answers") || "{}"),
   result: null
 };

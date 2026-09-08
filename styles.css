@@ -208,3 +208,13 @@ footer{padding:16px 0 26px;text-align:center;color:#5f5f5b;font-size:11px;text-t
 .coach-box{margin-top:18px;padding:18px;border:1px solid #343434;background:#0d0d0d;border-radius:18px}.coach-kicker{color:var(--accent);font-size:10px;text-transform:uppercase;letter-spacing:.13em;font-weight:900;margin-bottom:8px}.coach-message{color:#d7d7d1;line-height:1.5}.coach-question{font-weight:800;font-size:16px;line-height:1.4;margin:13px 0}
 .choices{display:grid;gap:7px}.choice{text-align:left;border:1px solid #303030;background:#151515;color:#e5e5df;border-radius:13px;padding:11px 12px;line-height:1.35}.choice:hover{border-color:var(--accent)}.choice span{display:inline-grid;place-items:center;width:23px;height:23px;border-radius:50%;background:#252525;color:var(--accent);font-size:10px;font-weight:900;margin-right:9px}
 .coach-follow{display:flex;gap:8px;margin-top:11px}.coach-follow input{flex:1;min-width:0;border:1px solid #303030;background:#151515;color:#eee;border-radius:12px;padding:11px 12px;outline:none}.mini-primary{border:0;background:var(--accent);color:#080808;border-radius:12px;padding:10px 13px;font-weight:900;font-size:11px}.synthesis blockquote{font-family:"Playfair Display",Georgia,serif;font-style:italic;font-size:18px;line-height:1.5;margin:10px 0 16px;color:#f0eee8}.synth-actions{display:flex;gap:8px;flex-wrap:wrap}.coach-loading{display:flex;align-items:center;gap:12px;color:#aaa}.mini-loader{width:20px;height:20px;border-radius:50%;border:3px solid #333;border-top-color:var(--accent);animation:spin .7s linear infinite}@media(max-width:600px){.coach-follow{flex-direction:column}}
+
+.marketing-optin{
+  display:flex;align-items:flex-start;gap:10px;margin-top:14px;padding:14px 15px;
+  border:1px solid #2f2f2f;background:#101010;border-radius:14px;color:#b8b8b2;
+  font-size:12px;line-height:1.5;cursor:pointer
+}
+.marketing-optin input{
+  margin-top:3px;accent-color:var(--accent);width:16px;height:16px;flex:0 0 auto
+}
+.marketing-optin strong{color:var(--ink)}
