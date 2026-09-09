@@ -93,7 +93,7 @@ function renderLead() {
           <small id="emailHelp">Elle servira à t'envoyer ton diagnostic.</small>
         </label>
       </div>
-      <div class="lead-consent">En continuant, tu acceptes que ton prénom, ton e-mail et tes réponses soient enregistrés afin de générer et sauvegarder ton diagnostic.</div>
+      <div class="lead-consent">En continuant, tu acceptes que ton prénom, ton e-mail et tes réponses soient enregistrés afin de générer, sauvegarder et t'envoyer ton diagnostic et ton plan d'action.</div>
       <label class="marketing-optin">
         <input id="marketingConsent" type="checkbox" ${state.lead?.marketing_consent ? "checked" : ""}>
         <span>Je souhaite aussi recevoir les conseils, contenus et actualités de <strong>Nico.just.Nico</strong> par e-mail.</span>
@@ -157,7 +157,7 @@ function renderHome() {
       <h1>Tu penses n'avoir <span class="acid">rien à vendre ?</span></h1>
 
       <div class="hero-sub">
-        Le problème n'est peut-être pas que tu n'as aucune compétence.
+        Potentiel · Opportunités · Revenus complémentaires
       </div>
 
       <p class="hero-copy">
@@ -406,7 +406,15 @@ function renderResult() {
 
         <div class="result-actions">
           <button class="primary" id="copyBtn">Copier mon résultat <span class="arrow">↗</span></button>
-          <button class="secondary" id="restartBtn">Recommencer</button>
+          <section class="result-cta">
+          <div class="result-cta-kicker">ET MAINTENANT ?</div>
+          <h2>ON PASSE DU DIAGNOSTIC À <span>L'ACTION.</span></h2>
+          <p>Grâce à ce diagnostic, je t'offre une <strong>session 1:1</strong> pour t'aider à transformer ce qui ressort ici en premières actions concrètes, choisir par quoi commencer et lancer la machine.</p>
+          <p class="result-cta-note">Écris-moi simplement <strong>« DIAGNOSTIC »</strong> sur Instagram pour qu'on regarde ensemble la suite.</p>
+          <a class="result-cta-button" href="https://www.instagram.com/nico.just.nico/" target="_blank" rel="noopener noreferrer">RÉSERVER MA SESSION 1:1 OFFERTE <span>→</span></a>
+          <div class="result-cta-handle">@nico.just.nico</div>
+        </section>
+        <button class="secondary" id="restartBtn">Recommencer</button>
         </div>
       </div>
     </div>`;
@@ -414,7 +422,7 @@ function renderResult() {
   document.querySelector("#restartBtn").addEventListener("click", restart);
   document.querySelector("#copyBtn").addEventListener("click", async (e) => {
     const text = [
-      `TON FIL ROUGE — ${r.profil}`,
+      `DIAGNOSTIC / 01 — ${r.profil}`,
       "",
       r.synthese,
       "",
