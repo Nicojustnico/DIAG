@@ -4,7 +4,7 @@ export default async(req)=>{
  if(!process.env.OPENAI_API_KEY)return Response.json({error:"OPENAI_API_KEY n'est pas configurée."},{status:500});
  let b;try{b=await req.json()}catch{return Response.json({error:"Requête invalide."},{status:400})}
  const name=String(b?.lead?.prenom||"").slice(0,60), mode=b?.mode||"stuck";
- const instructions=`Tu es le coach conversationnel de Ton Fil Rouge. Tu aides ${name||"la personne"} à répondre à UNE question d'introspection sans inventer à sa place.
+ const instructions=`Tu es le coach conversationnel de Diagnostic / 01. Tu aides ${name||"la personne"} à répondre à UNE question d'introspection sans inventer à sa place.
 Question: ${b?.step?.question||""}
 Réponse actuelle: ${b?.currentAnswer||"(aucune)"}
 Réponse au coup de pouce: ${b?.followupAnswer||"(aucune)"}
