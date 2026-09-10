@@ -136,6 +136,8 @@ function restart() {
 }
 
 
+function maskEmail(email=""){const [l,d]=String(email).split("@");if(!l||!d)return email;return `${l.slice(0,2)}***@${d}`;}
+
 function validEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(email.trim());
 }
@@ -408,6 +410,12 @@ async function analyze() {
       }
     }
 
+    let emailSent=false;
+    try{
+      const mail=await fetchJsonRobust("/api/send-diagnostic",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prenom:state.lead.prenom,email:state.lead.email,result:data})},{retries:1,retryDelay:1200});
+      emailSent=Boolean(mail?.ok);
+    }catch(e){console.warn("Envoi e-mail non bloquant :",e)}
+    state.resultEmailSent=emailSent;
     renderResult();
   } catch (err) {
     app.innerHTML = `
@@ -438,7 +446,8 @@ function renderResult() {
   app.innerHTML = `
     <div class="result-wrap">
       <div class="frame result-card">
-        <div class="result-header">
+        <div class="email-status ${state.resultEmailSent ? "sent" : "not-sent"}">${state.resultEmailSent ? `✓ Une copie de ton diagnostic et de ton plan d'action a été envoyée à <strong>${esc(maskEmail(state.lead.email))}</strong>.` : `Ton diagnostic est bien disponible ici. L'envoi par e-mail n'a pas pu être confirmé pour le moment.`}</div>
+      <div class="result-header">
           <div>
             <div class="result-kicker">Diagnostic / 01 — ${esc(state.lead?.prenom || "ton profil")}</div>
             <h2 class="profile-name">${esc(r.profil || "Profil hybride")}</h2>
