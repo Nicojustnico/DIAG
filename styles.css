@@ -223,3 +223,45 @@ footer{padding:16px 0 26px;text-align:center;color:#5f5f5b;font-size:11px;text-t
 .email-status{margin:0 0 18px;padding:12px 14px;border-radius:14px;font-size:12px;line-height:1.5;border:1px solid #313131;background:#101010;color:#bdbdb6}
 .email-status.sent{border-color:rgba(201,249,23,.35);background:rgba(201,249,23,.06)}
 .email-status.sent strong{color:var(--accent)}
+
+
+/* V6.2.2 — Lisibilité du résumé de diagnostic */
+.result-card .result-header{
+  align-items:flex-start;
+}
+.result-card .result-header > div:first-child{
+  min-width:0;
+  max-width:760px;
+}
+.result-card .profile-name{
+  font-family:"Anton", Impact, sans-serif;
+  font-size:clamp(42px, 7vw, 78px);
+  line-height:.94;
+  letter-spacing:-.02em;
+  text-transform:uppercase;
+  max-width:760px;
+  margin:8px 0 0;
+}
+.result-card .profile-summary{
+  font-family:Arial, Helvetica, sans-serif;
+  font-style:normal;
+  font-weight:400;
+  font-size:clamp(17px, 2vw, 21px);
+  line-height:1.6;
+  letter-spacing:0;
+  text-transform:none;
+  max-width:700px;
+  margin:22px 0 0;
+  color:#c8c8c1;
+}
+@media (max-width:700px){
+  .result-card .profile-name{
+    font-size:clamp(38px, 12vw, 58px);
+    line-height:.96;
+  }
+  .result-card .profile-summary{
+    font-size:17px;
+    line-height:1.58;
+    margin-top:18px;
+  }
+}
