@@ -1,4 +1,4 @@
-# Ton Fil Rouge — V1 Netlify
+# Diagnostic / 01 — V1 Netlify
 
 Petit diagnostic interactif propulsé par l'API OpenAI.
 
@@ -60,3 +60,10 @@ Correction Supabase Secret Key : la clé `sb_secret_...` est envoyée uniquement
 
 ## V6 — Diagnostic / 01
 Rebranding + message e-mail + CTA final session 1:1 Instagram. IMPORTANT : l'envoi transactionnel par e-mail n'est pas encore branché ; connecter un fournisseur e-mail avant diffusion publique de la promesse d'envoi.
+
+
+## V6.1
+- Correction robuste de la génération finale : lecture texte + parsing JSON sécurisé.
+- 1 nouvelle tentative automatique en cas d'erreur réseau, 429 ou 5xx.
+- Message utilisateur simplifié en cas d'échec temporaire.
+- Remplacement des dernières occurrences de « Ton Fil Rouge » par « Diagnostic / 01 ».

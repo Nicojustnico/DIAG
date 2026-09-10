@@ -51,6 +51,70 @@ let state = {
   result: null
 };
 
+
+async function fetchJsonRobust(url, options = {}, { retries = 1, retryDelay = 900 } = {}) {
+  let lastError;
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(url, options);
+      const raw = await res.text();
+
+      let data = null;
+      if (raw) {
+        try {
+          data = JSON.parse(raw);
+        } catch {
+          const err = new Error(
+            res.ok
+              ? "Réponse serveur invalide. Réessaie dans quelques secondes."
+              : `Le serveur a répondu avec une erreur (${res.status}).`
+          );
+          err.status = res.status;
+          err.raw = raw.slice(0, 300);
+          throw err;
+        }
+      }
+
+      if (!res.ok) {
+        const message =
+          data?.error ||
+          data?.message ||
+          `Le serveur a rencontré une erreur (${res.status}).`;
+        const err = new Error(message);
+        err.status = res.status;
+        err.data = data;
+        throw err;
+      }
+
+      if (!data) {
+        throw new Error("Le serveur n'a renvoyé aucune donnée. Réessaie dans quelques secondes.");
+      }
+
+      return data;
+    } catch (err) {
+      lastError = err;
+
+      const status = err?.status;
+      const retryable =
+        !status ||
+        status === 408 ||
+        status === 425 ||
+        status === 429 ||
+        status >= 500;
+
+      if (attempt < retries && retryable) {
+        await new Promise(resolve => setTimeout(resolve, retryDelay * (attempt + 1)));
+        continue;
+      }
+      break;
+    }
+  }
+
+  throw lastError || new Error("Une erreur inattendue est survenue.");
+}
+
+
 function esc(str="") {
   return String(str)
     .replaceAll("&","&amp;")
@@ -172,7 +236,7 @@ function renderHome() {
       </div>
 
       <button class="primary" id="startBtn">
-        Trouver mon fil rouge <span class="arrow">→</span>
+        Commencer mon diagnostic <span class="arrow">→</span>
       </button>
     </div>`;
   document.querySelector("#startBtn").addEventListener("click", start);
@@ -315,13 +379,11 @@ async function analyze() {
     </div>`;
 
   try {
-    const res = await fetch("/api/analyze", {
+    const data = await fetchJsonRobust("/api/analyze", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify({ answers: state.answers, lead: state.lead })
-    });
-
-    const data = await res.json();
+    }, { retries: 1, retryDelay: 1000 });
     if (!res.ok) throw new Error(data.error || "Erreur inconnue");
 
     state.result = data;
@@ -378,7 +440,7 @@ function renderResult() {
       <div class="frame result-card">
         <div class="result-header">
           <div>
-            <div class="result-kicker">Le fil rouge de ${esc(state.lead?.prenom || "ton profil")}</div>
+            <div class="result-kicker">Diagnostic / 01 — ${esc(state.lead?.prenom || "ton profil")}</div>
             <h2 class="profile-name">${esc(r.profil || "Profil hybride")}</h2>
             <p class="profile-summary">${esc(r.synthese || "")}</p>
           </div>
