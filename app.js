@@ -202,9 +202,7 @@ function renderLead() {
         body:JSON.stringify(payload)
       });
       const data=await res.json();
-      if(!res.ok) throw new Error(data.error || "Impossible d'enregistrer tes informations.");
-
-      state.lead={...payload,lead_id:data.id};
+state.lead={...payload,lead_id:data.id};
       sessionStorage.setItem("filrouge_lead",JSON.stringify(state.lead));
       state.step=0;
       renderStep();
@@ -328,8 +326,7 @@ async function runCoach(mode, followupAnswer = "") {
       })
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Erreur");
-    renderCoach(data);
+renderCoach(data);
   } catch (err) {
     zone.innerHTML = `<div class="coach-box">Je n'arrive pas à t'aider pour le moment. ${esc(err.message)}</div>`;
   }
@@ -359,8 +356,8 @@ async function synthesize(value) {
       lead:state.lead,step:{index:state.step,key:s.key,title:s.title,question:s.question},mode:"synthesize",
       currentAnswer:textarea.value.trim(),followupAnswer:value,previousAnswers:state.answers
     })});
-    const data=await res.json(); if(!res.ok)throw new Error(data.error||"Erreur");
-    zone.innerHTML=`<div class="coach-box synthesis"><div class="coach-kicker">Voilà ce que je retiens</div>
+    const data=await res.json();
+zone.innerHTML=`<div class="coach-box synthesis"><div class="coach-kicker">Voilà ce que je retiens</div>
       <blockquote>${esc(data.suggestedAnswer)}</blockquote>
       <div class="synth-actions"><button class="mini-primary" id="useAnswer">✓ C'est ça</button><button class="coach-btn" id="editAnswer">Modifier moi-même</button></div></div>`;
     document.querySelector("#useAnswer").onclick=()=>{
@@ -386,9 +383,7 @@ async function analyze() {
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify({ answers: state.answers, lead: state.lead })
     }, { retries: 1, retryDelay: 1000 });
-    if (!res.ok) throw new Error(data.error || "Erreur inconnue");
-
-    state.result = data;
+state.result = data;
 
     if(state.lead?.lead_id){
       try{
@@ -422,7 +417,7 @@ async function analyze() {
       <div class="frame error">
         <div class="icon">↯</div>
         <h2>Impossible de générer ton profil.</h2>
-        <p>${esc(err.message)}<br>Vérifie notamment que la variable <strong>OPENAI_API_KEY</strong> est configurée dans Netlify.</p>
+        <p>${esc(err.message)}<br>Tes réponses sont conservées. La génération a rencontré un problème temporaire : tu peux réessayer dans quelques secondes.</p>
         <button class="primary" id="retryBtn">Réessayer <span class="arrow">→</span></button>
       </div>`;
     document.querySelector("#retryBtn").addEventListener("click", analyze);
