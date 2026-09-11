@@ -67,3 +67,21 @@ Rebranding + message e-mail + CTA final session 1:1 Instagram. IMPORTANT : l'env
 - 1 nouvelle tentative automatique en cas d'erreur réseau, 429 ou 5xx.
 - Message utilisateur simplifié en cas d'échec temporaire.
 - Remplacement des dernières occurrences de « Ton Fil Rouge » par « Diagnostic / 01 ».
+
+
+## V6.2.1 Hotfix
+Correction de l'erreur `res is not defined` dans la génération finale. Aucun changement aux variables Netlify/Supabase/Resend.
+
+
+## V6.2.2 — Rapport plus lisible
+Le nom du profil conserve la typographie display. La synthèse passe en texte courant 17–21 px, line-height 1.6, largeur limitée à 700 px.
+
+
+
+## V6.3 - Rapport PDF
+- Suppression de l'envoi automatique Resend.
+- Suppression de la promesse d'envoi du rapport par e-mail.
+- Nouveau bouton principal : « Télécharger mon diagnostic PDF ».
+- Le bouton ouvre une version A4 brandée puis déclenche la boîte de dialogue d'impression du navigateur. L'utilisateur choisit « Enregistrer au format PDF ».
+- Le rapport reprend profil, synthèse, forces, opportunités, recommandation, plan d'action 7 jours et CTA 1:1 Instagram.
+- `RESEND_API_KEY` n'est plus utilisée par cette version et peut être supprimée de Netlify.

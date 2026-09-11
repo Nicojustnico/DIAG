@@ -159,7 +159,7 @@ function renderLead() {
           <small id="emailHelp">Elle servira à t'envoyer ton diagnostic.</small>
         </label>
       </div>
-      <div class="lead-consent">En continuant, tu acceptes que ton prénom, ton e-mail et tes réponses soient enregistrés afin de générer, sauvegarder et t'envoyer ton diagnostic et ton plan d'action.</div>
+      <div class="lead-consent">En continuant, tu acceptes que ton prénom, ton e-mail et tes réponses soient enregistrés afin de générer et sauvegarder ton diagnostic et ton plan d'action.</div>
       <label class="marketing-optin">
         <input id="marketingConsent" type="checkbox" ${state.lead?.marketing_consent ? "checked" : ""}>
         <span>Je souhaite aussi recevoir les conseils, contenus et actualités de <strong>Nico.just.Nico</strong> par e-mail.</span>
@@ -404,13 +404,6 @@ state.result = data;
         console.warn("Sauvegarde Supabase finale non bloquante :", saveErr);
       }
     }
-
-    let emailSent=false;
-    try{
-      const mail=await fetchJsonRobust("/api/send-diagnostic",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prenom:state.lead.prenom,email:state.lead.email,result:data})},{retries:1,retryDelay:1200});
-      emailSent=Boolean(mail?.ok);
-    }catch(e){console.warn("Envoi e-mail non bloquant :",e)}
-    state.resultEmailSent=emailSent;
     renderResult();
   } catch (err) {
     app.innerHTML = `
@@ -422,6 +415,106 @@ state.result = data;
       </div>`;
     document.querySelector("#retryBtn").addEventListener("click", analyze);
   }
+}
+
+
+function downloadDiagnosticPdf() {
+  const r = state.result || {};
+  const lead = state.lead || {};
+  const escPdf = (v="") => esc(v);
+  const forces = (r.forces || []).map(x => `<li>${escPdf(x)}</li>`).join("");
+  const pistes = (r.pistes || []).map((x,i) => `
+    <div class="pdf-idea">
+      <div class="pdf-num">0${i+1}</div>
+      <div><h3>${escPdf(x?.titre || "")}</h3><p>${escPdf(x?.pourquoi || "")}</p></div>
+    </div>`).join("");
+  const plan = (r.plan_7_jours || []).map((x,i) => `
+    <div class="pdf-action"><strong>JOUR ${i+1}</strong><span>${escPdf(x)}</span></div>`).join("");
+
+  const report = `<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<title>Diagnostic 01 - ${escPdf(lead.prenom || "Rapport")}</title>
+<style>
+@page{size:A4;margin:14mm}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:#111;font-family:Arial,Helvetica,sans-serif;font-size:11pt;line-height:1.5}
+.cover{min-height:255mm;background:#0b0b0b;color:#f5f3ec;padding:22mm 18mm;display:flex;flex-direction:column;justify-content:space-between;page-break-after:always}
+.kicker{color:#c9f917;font-size:10pt;font-weight:800;letter-spacing:2px}
+.cover h1{font-size:42pt;line-height:.95;text-transform:uppercase;margin:20mm 0 5mm;letter-spacing:-1px}
+.cover h1 span{color:#c9f917}
+.cover p{max-width:125mm;color:#c8c8c1;font-size:14pt}
+.meta{border-top:1px solid #333;padding-top:7mm;color:#aaa;font-size:9pt}
+.page{padding:3mm 0}
+.section{margin:0 0 11mm;break-inside:avoid}
+.label{font-size:8.5pt;font-weight:900;letter-spacing:1.5px;color:#668000;text-transform:uppercase;margin-bottom:2mm}
+h2{font-size:25pt;line-height:1.05;text-transform:uppercase;margin:0 0 4mm}
+.summary{font-size:12pt;line-height:1.65;color:#333;max-width:170mm}
+ul{padding-left:6mm}
+li{margin-bottom:2.5mm}
+.pdf-idea{display:grid;grid-template-columns:13mm 1fr;gap:3mm;border-top:1px solid #ddd;padding:4mm 0;break-inside:avoid}
+.pdf-num{font-weight:900;color:#668000}
+.pdf-idea h3{font-size:14pt;margin:0 0 1mm}.pdf-idea p{margin:0;color:#444}
+.reco{background:#c9f917;padding:7mm;border-radius:5mm;break-inside:avoid}
+.reco h3{font-size:19pt;margin:1mm 0 2mm;text-transform:uppercase}.reco p{margin:0}
+.pdf-action{display:grid;grid-template-columns:25mm 1fr;gap:4mm;padding:4mm 0;border-bottom:1px solid #ddd;break-inside:avoid}
+.pdf-action strong{font-size:9pt;color:#668000}
+.cta{margin-top:12mm;background:#0b0b0b;color:#f5f3ec;padding:9mm;border-radius:5mm;break-inside:avoid}
+.cta h2{color:#fff}.cta h2 span{color:#c9f917}.cta p{color:#c8c8c1}
+.cta .handle{color:#c9f917;font-weight:800}
+.footer{margin-top:10mm;font-size:8.5pt;color:#777}
+@media print{.no-print{display:none!important}}
+</style></head><body>
+<section class="cover">
+ <div>
+  <div class="kicker">DIAGNOSTIC / 01</div>
+  <h1>${escPdf(lead.prenom || "")},<br>tu ne pars pas de <span>zéro.</span></h1>
+  <p>Potentiel · Opportunités · Revenus complémentaires</p>
+ </div>
+ <div class="meta">Rapport personnalisé - Nico.just.Nico</div>
+</section>
+<main class="page">
+ <section class="section">
+  <div class="label">Ton profil</div>
+  <h2>${escPdf(r.profil || "Profil hybride")}</h2>
+  <div class="summary">${escPdf(r.synthese || "")}</div>
+ </section>
+ <section class="section">
+  <div class="label">Tes forces</div>
+  <ul>${forces}</ul>
+ </section>
+ <section class="section">
+  <div class="label">Tes opportunités</div>
+  ${pistes}
+ </section>
+ <section class="section reco">
+  <div style="font-size:8.5pt;font-weight:900;letter-spacing:1.3px">À TESTER EN PREMIER</div>
+  <h3>${escPdf(r.recommandation?.titre || "")}</h3>
+  <p>${escPdf(r.recommandation?.explication || "")}</p>
+ </section>
+ <section class="section" style="margin-top:10mm">
+  <div class="label">Ton plan d'action - 7 jours</div>
+  ${plan}
+ </section>
+ <section class="cta">
+  <div class="label" style="color:#c9f917">Et maintenant ?</div>
+  <h2>On passe du diagnostic à <span>l'action.</span></h2>
+  <p>Grâce à ce diagnostic, je t'offre une session 1:1 pour t'aider à transformer ces pistes en premières actions concrètes et lancer la machine.</p>
+  <p>Écris-moi <strong>« DIAGNOSTIC »</strong> sur Instagram : <span class="handle">@nico.just.nico</span></p>
+ </section>
+ <div class="footer">Diagnostic / 01 - Nico.just.Nico</div>
+</main>
+<script>
+window.onload=()=>{setTimeout(()=>window.print(),250)}
+</script></body></html>`;
+
+  const w = window.open("", "_blank");
+  if (!w) {
+    alert("Ton navigateur bloque l'ouverture du rapport. Autorise les fenêtres pop-up puis réessaie.");
+    return;
+  }
+  w.document.open();
+  w.document.write(report);
+  w.document.close();
 }
 
 function renderResult() {
@@ -441,7 +534,6 @@ function renderResult() {
   app.innerHTML = `
     <div class="result-wrap">
       <div class="frame result-card">
-        <div class="email-status ${state.resultEmailSent ? "sent" : "not-sent"}">${state.resultEmailSent ? `✓ Une copie de ton diagnostic et de ton plan d'action a été envoyée à <strong>${esc(maskEmail(state.lead.email))}</strong>.` : `Ton diagnostic est bien disponible ici. L'envoi par e-mail n'a pas pu être confirmé pour le moment.`}</div>
       <div class="result-header">
           <div>
             <div class="result-kicker">Diagnostic / 01 — ${esc(state.lead?.prenom || "ton profil")}</div>
@@ -471,7 +563,8 @@ function renderResult() {
         </div>
 
         <div class="result-actions">
-          <button class="primary" id="copyBtn">Copier mon résultat <span class="arrow">↗</span></button>
+          <button class="primary pdf-download" id="pdfBtn">Télécharger mon diagnostic PDF <span class="arrow">↓</span></button>
+          <button class="secondary" id="copyBtn">Copier mon résultat <span class="arrow">↗</span></button>
           <section class="result-cta">
           <div class="result-cta-kicker">ET MAINTENANT ?</div>
           <h2>ON PASSE DU DIAGNOSTIC À <span>L'ACTION.</span></h2>
@@ -486,6 +579,7 @@ function renderResult() {
     </div>`;
 
   document.querySelector("#restartBtn").addEventListener("click", restart);
+  document.querySelector("#pdfBtn").addEventListener("click", downloadDiagnosticPdf);
   document.querySelector("#copyBtn").addEventListener("click", async (e) => {
     const text = [
       `DIAGNOSTIC / 01 — ${r.profil}`,

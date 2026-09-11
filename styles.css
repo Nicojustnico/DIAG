@@ -265,3 +265,9 @@ footer{padding:16px 0 26px;text-align:center;color:#5f5f5b;font-size:11px;text-t
     margin-top:18px;
   }
 }
+
+/* V6.3 - CTA téléchargement rapport */
+.pdf-download{
+  width:100%;
+  margin-bottom:10px;
+}
